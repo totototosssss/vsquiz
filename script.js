@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (normalizedScore >= 80) message = "高得点！お見事です！👏";
         else if (normalizedScore >= 60) message = "よくできました！😊";
         else if (normalizedScore >= 40) message = "まずまずですね！👍";
-        else message = "もう少し頑張りましょう！💪";
+        else message = "もう少し頑張りましょう";
         ui.finalScoreMessage.textContent = message;
 
         ui.finalScoreArea.style.display = 'block';
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lastAnswerWasInitiallyIncorrect) return; 
         correctAnswersOverall++; 
         updateOverallCorrectRateDisplay(); 
-        ui.resultText.textContent = '判定変更: 正解！ 🎉'; 
+        ui.resultText.textContent = '判定変更:🤡 不正してませんか?'; 
         ui.resultText.className = 'correct'; 
         ui.disputeButton.style.display = 'none'; 
         lastAnswerWasInitiallyIncorrect = false;
