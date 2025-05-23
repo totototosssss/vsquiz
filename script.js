@@ -9,57 +9,53 @@ document.addEventListener('DOMContentLoaded', () => {
         nextQuestion: document.getElementById('nextQuestion'),
         loadingMessage: document.getElementById('loadingMessage'),
         errorMessage: document.getElementById('errorMessage'),
-        quizEndMessage: document.getElementById('quizEndMessage'), // 全CSV終了時のメッセージ用
+        quizEndMessage: document.getElementById('quizEndMessage'),
         quizArea: document.getElementById('quizArea'),
         resultArea: document.getElementById('resultArea'),
         correctRateText: document.getElementById('correctRateText'),
         avgRevealRateText: document.getElementById('avgRevealRateText'),
         disputeButton: document.getElementById('disputeButton'),
-        enableSlowDisplayTextCheckbox: document.getElementById('enableSlowDisplayTextCheckbox'),
+        // enableSlowDisplayTextCheckbox は削除
         stopSlowDisplayTextButton: document.getElementById('stopSlowDisplayTextButton'),
-        speedControlArea: document.getElementById('speedControlArea'),
-        slowDisplayTextSpeedSlider: document.getElementById('slowDisplayTextSpeedSlider'),
-        speedValueDisplay: document.getElementById('speedValueDisplay'),
+        // speedControlArea, slowDisplayTextSpeedSlider, speedValueDisplay は削除
         enableHintCheckbox: document.getElementById('enableHintCheckbox'),
         hintAreaContainer: document.querySelector('.hint-area-container'),
         hintButton: document.getElementById('hintButton'),
         hintTextDisplay: document.getElementById('hintTextDisplay'),
         showStoneImageCheckbox: document.getElementById('showStoneImageCheckbox'),
         stoneImage: document.getElementById('stoneImage'),
-        // ▼▼▼ スコア関連UI要素追加 ▼▼▼
         currentScoreText: document.getElementById('currentScoreText'),
         finalScoreArea: document.getElementById('finalScoreArea'),
         finalNormalizedScoreText: document.getElementById('finalNormalizedScoreText'),
+        finalRawScoreText: document.getElementById('finalRawScoreText'), // ▼▼▼ 追加 ▼▼▼
+        finalScoreMessage: document.getElementById('finalScoreMessage'), // ▼▼▼ 追加 ▼▼▼
         playAgainButton: document.getElementById('playAgainButton')
-        // ▲▲▲ スコア関連UI要素追加 ▲▲▲
     };
 
     const CSV_FILE_PATH = 'みんはや問題リストv1.27 - 問題リスト.csv';
     const COLUMN_INDICES = { QUESTION: 0, DISPLAY_ANSWER: 1, READING_ANSWER: 2 };
-    const QUESTIONS_PER_SESSION = 10; // ▼▼▼ 1セッションあたりの問題数 ▼▼▼
-    const SCORE_CONSTANT = 1;         // ▼▼▼ スコア計算式の定数 ▼▼▼
+    const QUESTIONS_PER_SESSION = 10;
+    const SCORE_CONSTANT = 1;
+    const SLOW_DISPLAY_INTERVAL_MS = 180; // ▼▼▼ 固定速度 ▼▼▼
 
-    let allLoadedQuizzes = []; // CSVから読み込んだ全てのクイズ
-    let currentQuizSession = []; // 現在の10問セッション用のクイズ
-    let overallQuizIndex = 0; // allLoadedQuizzesのどこまで使用したかのインデックス
+    let allLoadedQuizzes = [];
+    let currentQuizSession = [];
+    let overallQuizIndex = 0;
 
-    // セッションごとの状態変数
-    let currentQuestionInSessionIndex = 0; //現在のセッションで何問目か (0-9)
+    let currentQuestionInSessionIndex = 0;
     let sessionRawScore = 0;
     let hintUsedThisQuestion = false;
-    let isSlowReadActiveThisQuestion = false; // displayQuestion時に設定
+    // isSlowReadActiveThisQuestion は常にtrueなので不要に
 
-    // ゆっくり表示関連
     let slowDisplayTextIntervalId = null;
     let currentQuestionFullText = '';
     let currentDisplayedCharIndex = 0;
     let stoppedAtIndex = -1;
 
-    // 統計用 (正答率、平均開示率)
-    let correctAnswersOverall = 0; // 全体での正解数 (正答率用)
-    let questionsAttemptedOverall = 0; // 全体での試行数 (正答率用)
-    let totalRevealPercentageSumForStat = 0; // 平均開示率統計用
-    let slowDisplayAnswerCountForStat = 0;  // 平均開示率統計用
+    let correctAnswersOverall = 0;
+    let questionsAttemptedOverall = 0;
+    let totalRevealPercentageSumForStat = 0;
+    let slowDisplayAnswerCountForStat = 0;
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -68,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function initializeGlobalStats() { // ページロード時や完全リセット時に呼ぶ
+    function initializeGlobalStats() {
         correctAnswersOverall = 0;
         questionsAttemptedOverall = 0;
         totalRevealPercentageSumForStat = 0;
@@ -79,12 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function startNewSession() {
         currentQuizSession = allLoadedQuizzes.slice(overallQuizIndex, overallQuizIndex + QUESTIONS_PER_SESSION);
-        overallQuizIndex += currentQuizSession.length; // 使用した分進める
+        overallQuizIndex += currentQuizSession.length;
 
         if (currentQuizSession.length === 0) {
             ui.quizArea.style.display = 'none';
             ui.finalScoreArea.style.display = 'none';
-            ui.quizEndMessage.textContent = '全てのクイズが終了しました！お疲れ様でした。';
+            ui.quizEndMessage.textContent = '全てのクイズデータで遊び尽くしました！ありがとう！';
             ui.quizEndMessage.style.display = 'block';
             return;
         }
@@ -93,22 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionRawScore = 0;
         ui.currentScoreText.textContent = `現在スコア: 0`;
         ui.finalScoreArea.style.display = 'none';
-        ui.quizArea.style.display = 'block'; // クイズエリア表示
-        ui.quizEndMessage.style.display = 'none'; // 終了メッセージ隠す
+        ui.quizArea.style.display = 'block';
+        ui.quizEndMessage.style.display = 'none';
 
         displayQuestion();
     }
 
-
-    function initializeQuizSettings() { // 初回および「もう一度」の時にも呼ぶ設定部分
-        const useSlowRead = ui.enableSlowDisplayTextCheckbox.disabled ? ui.enableSlowDisplayTextCheckbox.checked : window.confirm("問題文をゆっくり表示する機能を使用しますか？\n（この設定は後でチェックボックスから変更できます）");
-        ui.enableSlowDisplayTextCheckbox.checked = useSlowRead;
-        ui.enableSlowDisplayTextCheckbox.disabled = true; // 初回確認後は変更不可にするか、毎回確認するか。ここでは初回のみ。
-
-        if (useSlowRead) { ui.speedControlArea.style.display = 'flex'; } 
-        else { ui.speedControlArea.style.display = 'none'; }
-        ui.speedValueDisplay.textContent = `${ui.slowDisplayTextSpeedSlider.value}ms`;
-
+    function initializeQuizSettings() { // チェックボックスの初期設定のみ
         if (ui.enableHintCheckbox.checked) { ui.hintAreaContainer.style.display = 'block'; }
         else { ui.hintAreaContainer.style.display = 'none'; }
 
@@ -116,12 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
         else { ui.stoneImage.style.display = 'none'; }
     }
 
-
     async function loadAllQuizzesAndStart() {
         try {
             ui.loadingMessage.style.display = 'block';
             ui.errorMessage.style.display = 'none';
-            // (他のUI初期化)
+            ui.correctRateText.textContent = '正答率: ---';
+            ui.avgRevealRateText.textContent = '平均開示率: ---';
+
 
             const response = await fetch(CSV_FILE_PATH);
             if (!response.ok) throw new Error(`CSVエラー (${response.status})`);
@@ -142,12 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (allLoadedQuizzes.length === 0) throw new Error('有効なクイズなし');
             shuffleArray(allLoadedQuizzes); 
             
-            overallQuizIndex = 0; // 全体インデックスリセット
-            initializeGlobalStats(); // 全体統計リセット
-            initializeQuizSettings(); // チェックボックスなどの設定
+            overallQuizIndex = 0;
+            initializeGlobalStats();
+            initializeQuizSettings(); // ページロード時の設定適用
             
             ui.loadingMessage.style.display = 'none';
-            startNewSession(); // 最初の10問セッション開始
+            startNewSession();
 
         } catch (error) {
             console.error('読み込みエラー:', error);
@@ -179,9 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.answerInput.focus();
     }
 
-    function startOrRestartSlowDisplayInterval() {
+    // startOrRestartSlowDisplayInterval は速度固定のため簡略化
+    function startSlowDisplayInterval() {
         if (slowDisplayTextIntervalId) { clearInterval(slowDisplayTextIntervalId); }
-        const displaySpeedMs = parseInt(ui.slowDisplayTextSpeedSlider.value, 10);
+        // const displaySpeedMs = SLOW_DISPLAY_INTERVAL_MS; // 固定値を使用
         if (currentDisplayedCharIndex >= currentQuestionFullText.length) {
             onSlowDisplayNaturalFinish(); 
             return;
@@ -193,23 +182,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 onSlowDisplayNaturalFinish();
             }
-        }, displaySpeedMs);
+        }, SLOW_DISPLAY_INTERVAL_MS); // 固定速度を使用
     }
 
     function displayQuestion() {
         ui.resultArea.style.display = 'none';
-        // ui.quizEndMessage はセッション終了時ではなく全クイズ終了時なのでここでは触らない
         ui.questionText.classList.remove('fade-in');
         void ui.questionText.offsetWidth; 
         ui.disputeButton.style.display = 'none';
         lastAnswerWasInitiallyIncorrect = false;
         stoppedAtIndex = -1;
-        hintUsedThisQuestion = false; // ヒント使用状況リセット
-        isSlowReadActiveThisQuestion = ui.enableSlowDisplayTextCheckbox.checked;
-
+        hintUsedThisQuestion = false;
+        // isSlowReadActiveThisQuestion は常に true
 
         if (slowDisplayTextIntervalId) { clearInterval(slowDisplayTextIntervalId); slowDisplayTextIntervalId = null; }
-        ui.stopSlowDisplayTextButton.style.display = 'none';
+        // ui.stopSlowDisplayTextButton はゆっくり表示開始時に制御
 
         ui.hintTextDisplay.textContent = '';
         ui.hintTextDisplay.style.display = 'none'; 
@@ -226,25 +213,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ui.questionNumberText.textContent = `第${currentQuestionInSessionIndex + 1}問 / ${QUESTIONS_PER_SESSION}問`;
             
-            if (isSlowReadActiveThisQuestion) {
-                ui.answerInput.disabled = true;
-                ui.submitAnswer.disabled = true;
-                ui.stopSlowDisplayTextButton.style.display = 'block';
-                startOrRestartSlowDisplayInterval();
-            } else {
-                ui.questionText.textContent = currentQuestionFullText;
-                ui.answerInput.disabled = false;
-                ui.submitAnswer.disabled = false;
-            }
+            // ゆっくり表示は常に有効
+            ui.answerInput.disabled = true;
+            ui.submitAnswer.disabled = true;
+            ui.stopSlowDisplayTextButton.style.display = 'block';
+            startSlowDisplayInterval(); // 速度固定のゆっくり表示開始
             
             ui.answerInput.value = '';
-            if (!isSlowReadActiveThisQuestion || !slowDisplayTextIntervalId) { 
-                 ui.answerInput.focus();
-            }
+            // フォーカスは onSlowDisplayNaturalFinish か stopProgressiveDisplayAndEnableInput で
             ui.submitAnswer.style.display = 'inline-block';
             ui.nextQuestion.style.display = 'none';
             ui.questionText.classList.add('fade-in');
-        } else { // 10問セッション終了
+        } else {
             endSession();
         }
     }
@@ -265,21 +245,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkAnswer() {
         if (currentQuestionInSessionIndex >= currentQuizSession.length) return;
         
-        let charsRevealedForCalc = currentQuestionFullText.length; 
-        // この問題でゆっくり表示が有効だった場合のみ、実際の開示文字数を計算
-        if (isSlowReadActiveThisQuestion) {
-            if (slowDisplayTextIntervalId) { // Enterキーなどで回答し、インターバルがまだ動いていた場合
-                clearInterval(slowDisplayTextIntervalId);
-                slowDisplayTextIntervalId = null;
-                charsRevealedForCalc = currentDisplayedCharIndex; 
-                if (stoppedAtIndex === -1) stoppedAtIndex = currentDisplayedCharIndex; 
-            } else if (stoppedAtIndex !== -1) { // 「表示停止」ボタンで停止した場合
-                charsRevealedForCalc = stoppedAtIndex;
-            } else { // ゆっくり表示が自然に完了した場合
-                charsRevealedForCalc = currentQuestionFullText.length;
-            }
-            charsRevealedForCalc = Math.min(charsRevealedForCalc, currentQuestionFullText.length);
+        let charsRevealedForCalc = currentQuestionFullText.length;
+        // ゆっくり表示が前提なので、停止状態に基づいて開示文字数を計算
+        if (slowDisplayTextIntervalId) { // Enterキーなどで回答し、インターバルがまだ動いていた場合
+            clearInterval(slowDisplayTextIntervalId);
+            slowDisplayTextIntervalId = null;
+            charsRevealedForCalc = currentDisplayedCharIndex; 
+            if (stoppedAtIndex === -1) stoppedAtIndex = currentDisplayedCharIndex; 
+        } else if (stoppedAtIndex !== -1) { // 「表示停止」ボタンで停止した場合
+            charsRevealedForCalc = stoppedAtIndex;
+        } else { // ゆっくり表示が自然に完了した場合
+            charsRevealedForCalc = currentQuestionFullText.length;
         }
+        charsRevealedForCalc = Math.min(charsRevealedForCalc, currentQuestionFullText.length);
 
         questionsAttemptedOverall++; 
         const userAnswer = ui.answerInput.value.trim();
@@ -287,22 +265,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCorrect = userAnswer === currentQuiz.readingAnswer;
         lastAnswerWasInitiallyIncorrect = false;
 
-        // 統計用の正答率更新
         if (isCorrect) correctAnswersOverall++;
         updateOverallCorrectRateDisplay();
 
         // スコア計算
         let revealPercentageForScoreFormula;
         if (isCorrect) {
-            if (isSlowReadActiveThisQuestion) {
-                revealPercentageForScoreFormula = (currentQuestionFullText.length > 0) ? (charsRevealedForCalc / currentQuestionFullText.length) * 100 : 0;
-            } else { // ゆっくり表示未使用で正解
-                revealPercentageForScoreFormula = 0;
-            }
-        } else { // 不正解
+            // ゆっくり表示は常時なので、常にこの計算
+            revealPercentageForScoreFormula = (currentQuestionFullText.length > 0) ? (charsRevealedForCalc / currentQuestionFullText.length) * 100 : 0;
+        } else { 
             revealPercentageForScoreFormula = 200;
         }
-
         const baseScoreTerm = 200 - revealPercentageForScoreFormula;
         const hintFactor = hintUsedThisQuestion ? 0.5 : 1.0;
         const correctnessFactor = isCorrect ? 1 : 0;
@@ -310,21 +283,17 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionRawScore += questionScore;
         ui.currentScoreText.textContent = `現在スコア: ${Math.round(sessionRawScore)}`;
 
-
-        // 平均開示率の統計更新 (ゆっくり表示利用時のみ)
-        if (isSlowReadActiveThisQuestion) {
-            let revealStatPercentage;
-            if (isCorrect) {
-                revealStatPercentage = (currentQuestionFullText.length > 0) ? (charsRevealedForCalc / currentQuestionFullText.length) * 100 : 0;
-            } else {
-                revealStatPercentage = 100; // 誤答時は100%扱い
-            }
-            totalRevealPercentageSumForStat += revealStatPercentage;
-            slowDisplayAnswerCountForStat++;
-            updateAvgRevealRateDisplay();
+        // 平均開示率の統計更新 (ゆっくり表示は常になので、常に計算対象)
+        let revealStatPercentage;
+        if (isCorrect) {
+            revealStatPercentage = (currentQuestionFullText.length > 0) ? (charsRevealedForCalc / currentQuestionFullText.length) * 100 : 0;
+        } else {
+            revealStatPercentage = 100;
         }
+        totalRevealPercentageSumForStat += revealStatPercentage;
+        slowDisplayAnswerCountForStat++;
+        updateAvgRevealRateDisplay();
         
-        // 結果表示
         if (isCorrect) {
             ui.resultText.textContent = '正解！ 🎉';
             ui.resultText.className = 'correct';
@@ -335,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.disputeButton.style.display = 'inline-block';
             lastAnswerWasInitiallyIncorrect = true;
         }
-        
         let correctAnswerFormatted = `「${currentQuiz.readingAnswer}」`;
         if (currentQuiz.displayAnswer && currentQuiz.displayAnswer !== currentQuiz.readingAnswer) {
             correctAnswerFormatted = `「${currentQuiz.readingAnswer} (${currentQuiz.displayAnswer})」`;
@@ -343,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.correctAnswerText.textContent = isCorrect ? '' : `正解は ${correctAnswerFormatted} です。`;
         
         ui.questionText.textContent = currentQuestionFullText;
-        if (isSlowReadActiveThisQuestion && stoppedAtIndex > 0 && stoppedAtIndex < currentQuestionFullText.length) {
+        if (stoppedAtIndex > 0 && stoppedAtIndex < currentQuestionFullText.length) {
             const preText = currentQuestionFullText.substring(0, stoppedAtIndex);
             const postText = currentQuestionFullText.substring(stoppedAtIndex);
             ui.questionText.innerHTML = `<span class="stopped-text-segment">${preText}</span>${postText}`;
@@ -358,28 +326,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function endSession() {
         ui.quizArea.style.display = 'none';
-        ui.resultArea.style.display = 'none'; // 個別の結果表示も隠す
+        ui.resultArea.style.display = 'none'; 
         
-        const maxPossibleRawScorePerQuestion = (200 - 0) * SCORE_CONSTANT * 1.0; // 0%開示、ヒントなしが最高
+        const maxPossibleRawScorePerQuestion = (200 - 0) * SCORE_CONSTANT * 1.0;
         const maxTotalSessionRawScore = maxPossibleRawScorePerQuestion * QUESTIONS_PER_SESSION;
         
         let normalizedScore = 0;
-        if (maxTotalSessionRawScore > 0) { // 0除算を避ける
+        if (maxTotalSessionRawScore > 0) {
             normalizedScore = (sessionRawScore / maxTotalSessionRawScore) * 100;
         }
-        normalizedScore = Math.max(0, Math.min(100, Math.round(normalizedScore))); // 0-100の範囲に収め、整数にする
+        normalizedScore = Math.max(0, Math.min(100, Math.round(normalizedScore)));
 
         ui.finalNormalizedScoreText.textContent = `最終スコア: ${normalizedScore} / 100`;
-        ui.finalScoreArea.style.display = 'block';
-        ui.hintAreaContainer.style.display = 'none'; // セッション終了時はヒントも隠す
-    }
+        ui.finalRawScoreText.textContent = `(あなたのポイント: ${Math.round(sessionRawScore)})`;
 
+        let message = "";
+        if (normalizedScore >= 95) message = "完璧です！素晴らしい！ 😮🎉";
+        else if (normalizedScore >= 80) message = "高得点！お見事です！👏";
+        else if (normalizedScore >= 60) message = "よくできました！😊";
+        else if (normalizedScore >= 40) message = "まずまずですね！👍";
+        else message = "もう少し頑張りましょう！💪";
+        ui.finalScoreMessage.textContent = message;
+
+        ui.finalScoreArea.style.display = 'block';
+        ui.hintAreaContainer.style.display = 'none';
+    }
 
     function handleDispute() {
         if (!lastAnswerWasInitiallyIncorrect) return; 
-        correctAnswersOverall++; // 全体の正答率に影響
-        // sessionRawScore はここでは変更しない（不服は正答率のみに影響し、スコアは最初の判定通りとするか、再計算するか。今回はスコアは変更しない）
-        // もしスコアも変更するなら、ここで再計算ロジックが必要
+        correctAnswersOverall++; 
         updateOverallCorrectRateDisplay(); 
         ui.resultText.textContent = '判定変更: 正解！ 🎉'; 
         ui.resultText.className = 'correct'; 
@@ -396,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ui.hintTextDisplay.textContent = `ヒント: 最初の1文字「${firstChar}」(${length}文字)`;
                 ui.hintTextDisplay.style.display = 'block';
                 ui.hintButton.disabled = true; 
-                hintUsedThisQuestion = true; // ▼▼▼ ヒント使用を記録 ▼▼▼
+                hintUsedThisQuestion = true;
             }
         }
     }
@@ -415,50 +390,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ui.showStoneImageCheckbox.checked) { ui.stoneImage.style.display = ''; } 
         else { ui.stoneImage.style.display = 'none'; }
     });
-    ui.playAgainButton.addEventListener('click', () => { // ▼▼▼ もう一度挑戦ボタン ▼▼▼
-        // initializeQuizSettings(); // 設定は維持または再確認
-        // overallQuizIndex は次の10問のために既に更新されているか、または全問リシャッフルするか
-        // 今回はシンプルに次の10問へ (もしallLoadedQuizzesが尽きたら loadAllQuizzesAndStart を呼ぶ)
-        if (overallQuizIndex >= allLoadedQuizzes.length) {
+    ui.playAgainButton.addEventListener('click', () => {
+        if (overallQuizIndex >= allLoadedQuizzes.length && currentQuizSession.length < QUESTIONS_PER_SESSION ) { // 最後のセッションが10問未満で終わった場合も含む
             alert("全てのクイズ問題をプレイしました！最初からロードし直します。");
-            loadAllQuizzesAndStart(); // 全ての問題をプレイし尽くしたら、再度全ロード&シャッフル
+            loadAllQuizzesAndStart(); 
         } else {
             startNewSession();
         }
     });
 
-    ui.enableSlowDisplayTextCheckbox.addEventListener('change', () => {
-        isSlowReadActiveThisQuestion = ui.enableSlowDisplayTextCheckbox.checked; // 即時反映
-        if (ui.enableSlowDisplayTextCheckbox.checked) {
-            ui.speedControlArea.style.display = 'flex';
-            // もし問題表示中にチェックされたら、その問題からゆっくり表示を適用するかどうか
-            // 現在は次の問題から適用される。即時適用は displayQuestion の再呼び出しなど複雑になる
-        } else {
-            ui.speedControlArea.style.display = 'none';
-            if (slowDisplayTextIntervalId) { 
-                clearInterval(slowDisplayTextIntervalId);
-                slowDisplayTextIntervalId = null;
-                ui.questionText.textContent = currentQuestionFullText;
-                ui.stopSlowDisplayTextButton.style.display = 'none';
-                ui.answerInput.disabled = false;
-                ui.submitAnswer.disabled = false;
-                if (currentQuestionInSessionIndex < currentQuizSession.length) ui.answerInput.focus();
-            }
-        }
-    });
-
-    ui.slowDisplayTextSpeedSlider.addEventListener('input', () => {
-        const newSpeed = ui.slowDisplayTextSpeedSlider.value;
-        ui.speedValueDisplay.textContent = `${newSpeed}ms`;
-        if (slowDisplayTextIntervalId) { 
-            startOrRestartSlowDisplayInterval(); 
-        }
-    });
-
+    // enableSlowDisplayTextCheckbox と slowDisplayTextSpeedSlider のリスナーは削除
+    
     ui.enableHintCheckbox.addEventListener('change', () => {
         if (ui.enableHintCheckbox.checked) {
             ui.hintAreaContainer.style.display = 'block'; 
-            if(currentQuestionInSessionIndex < currentQuizSession.length && totalQuestions > 0) {
+            if(currentQuestionInSessionIndex < currentQuizSession.length && totalQuestions > 0) { // totalQuestionsは古いかも、currentQuizSession.lengthで判断
                ui.hintButton.style.display = 'block';
             }
         } else {
@@ -466,6 +412,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initialize
-    loadAllQuizzesAndStart(); // 初期ロード関数を変更
+    loadAllQuizzesAndStart(); // 初回ロードとセッション開始
 });
