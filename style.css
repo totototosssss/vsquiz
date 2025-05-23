@@ -1,0 +1,113 @@
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #72edf2 10%, #5151e5 100%);
+    margin: 0;
+    padding: 20px; /* 下パディングも確保 */
+    box-sizing: border-box;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.97);
+    padding: 30px 45px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    text-align: center;
+    width: 100%;
+    max-width: 700px;
+    transition: transform 0.3s ease-out;
+    margin-bottom: 30px;
+}
+
+header { margin-bottom: 15px; }
+h1 { color: #2c3e50; margin-bottom: 15px; font-weight: 700; font-size: 2em; }
+.image-stats-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap;}
+#stoneImage { max-width: 70px; max-height: 70px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 3px solid white; object-fit: cover; }
+.stats-text-group { display: flex; flex-direction: column; align-items: flex-start; gap: 0px;} /* gap調整 */
+.stats-text { font-weight: bold; font-size: 1.0em; margin: 1px 0; white-space: nowrap; }
+#correctRateText { color: red; }
+.reveal-stats { color: #007bff; }
+.score-display { color: #28a745; } /* ▼▼▼ スコア表示の色 ▼▼▼ */
+
+
+.controls-wrapper { margin-top: 10px; margin-bottom: 20px; font-size: 0.9em; color: #555; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.feature-toggle {}
+.feature-toggle input[type="checkbox"] { margin-right: 5px; vertical-align: middle; }
+.feature-toggle label { vertical-align: middle; cursor: pointer; }
+.speed-control { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95em; }
+.speed-control label { white-space: nowrap; }
+.speed-control input[type="range"] { width: 120px; vertical-align: middle; }
+.speed-value { min-width: 50px; text-align: left; font-weight: bold; }
+
+main {}
+#quizArea { margin-bottom: 20px; }
+#quizArea p, #resultArea p { font-size: 1.2em; margin-bottom: 18px; }
+.question-meta { font-size: 0.9em !important; color: #555; margin-bottom: 8px !important; }
+#questionText { min-height: 80px; font-weight: 700; color: #34495e; margin-bottom: 15px !important; white-space: pre-wrap; line-height: 1.7; text-align: left; padding: 5px; border: 1px solid transparent; }
+.stopped-text-segment { background-color: rgba(255, 220, 100, 0.35); padding: 0 2px; border-radius: 2px; }
+
+#answerInput { width: calc(100% - 26px); padding: 14px; margin-bottom: 20px; border: 1px solid #bdc3c7; border-radius: 8px; font-size: 1em; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+#answerInput:focus { border-color: #5151e5; box-shadow: 0 0 8px rgba(81, 81, 229, 0.3); outline: none; }
+button { padding: 12px 28px; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.05em; font-weight: 700; letter-spacing: 0.5px; transition: all 0.25s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-transform: uppercase; margin: 5px; }
+#submitAnswer { background-color: #3498db; }
+#submitAnswer:hover { background-color: #2980b9; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+#nextQuestion { background-color: #2ecc71; }
+#nextQuestion:hover { background-color: #27ae60; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+#disputeButton { background-color: #f39c12; font-size: 0.9em; padding: 10px 20px; }
+#disputeButton:hover { background-color: #e67e22; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+.utility-button { background-color: #95a5a6; font-size: 0.9em !important; padding: 8px 18px !important; text-transform: none !important; letter-spacing: normal !important; }
+.utility-button:hover { background-color: #7f8c8d; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+#stopSlowDisplayTextButton { display: block; margin-left: auto; margin-right: auto; margin-bottom: 15px; }
+
+.hint-area-container { position: fixed; bottom: 15px; right: 15px; z-index: 1050; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: auto; min-width: 150px; max-width: 280px; text-align: center; }
+#hintButton { display: block; margin-left: auto; margin-right: auto; margin-bottom: 8px; padding: 6px 15px !important; font-size: 0.85em !important; }
+.hint-text { font-size: 0.85em !important; color: #333; margin: 0 !important; min-height: 1.2em; word-wrap: break-word; text-align: left; }
+
+#resultArea { margin-top: 25px; padding: 15px; border-radius: 8px; background-color: #f8f9fa; }
+#resultText { font-weight: 700; font-size: 1.3em; }
+#resultText.correct { color: #2ecc71; }
+#resultText.incorrect { color: #e74c3c; }
+#correctAnswerText { color: #555; font-size: 1.1em; }
+
+/* ▼▼▼ 最終スコア表示エリアのスタイル ▼▼▼ */
+.final-score-display {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    text-align: center;
+}
+.final-score-display h2 {
+    font-size: 1.5em;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+#finalNormalizedScoreText {
+    font-size: 1.8em !important; /* Importantを削除し、CSSの優先順位で調整推奨 */
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 20px !important;
+}
+#playAgainButton {
+    /* 既存のbuttonスタイルやutility-buttonスタイルを継承しつつ、必要なら微調整 */
+    background-color: #17a2b8; /* info color */
+}
+#playAgainButton:hover {
+    background-color: #138496;
+}
+/* ▲▲▲ 最終スコア表示エリアのスタイル ▲▲▲ */
+
+
+.error-message, #loadingMessage, #quizEndMessage { font-weight: bold; margin-top: 20px; font-size: 1.1em; }
+#loadingMessage { color: #3498db; }
+#errorMessage { color: #e74c3c; }
+#quizEndMessage { color: #2c3e50; font-size: 1.3em; }
+.fade-in { animation: fadeIn 0.6s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* YouTube動画関連スタイルは削除 */
