@@ -6,7 +6,7 @@ body {
     min-height: 100vh;
     background: linear-gradient(135deg, #72edf2 10%, #5151e5 100%);
     margin: 0;
-    padding: 20px; /* 下パディングも確保 */
+    padding: 20px;
     box-sizing: border-box;
     color: #333;
     line-height: 1.6;
@@ -26,23 +26,20 @@ body {
 
 header { margin-bottom: 15px; }
 h1 { color: #2c3e50; margin-bottom: 15px; font-weight: 700; font-size: 2em; }
-.image-stats-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap;}
+.image-stats-wrapper { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px; flex-wrap: wrap;}
 #stoneImage { max-width: 70px; max-height: 70px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 3px solid white; object-fit: cover; }
-.stats-text-group { display: flex; flex-direction: column; align-items: flex-start; gap: 0px;} /* gap調整 */
+.stats-text-group { display: flex; flex-direction: column; align-items: flex-start; gap: 0px;}
 .stats-text { font-weight: bold; font-size: 1.0em; margin: 1px 0; white-space: nowrap; }
 #correctRateText { color: red; }
 .reveal-stats { color: #007bff; }
-.score-display { color: #28a745; } /* ▼▼▼ スコア表示の色 ▼▼▼ */
+.score-display { color: #28a745; }
 
 
 .controls-wrapper { margin-top: 10px; margin-bottom: 20px; font-size: 0.9em; color: #555; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .feature-toggle {}
 .feature-toggle input[type="checkbox"] { margin-right: 5px; vertical-align: middle; }
 .feature-toggle label { vertical-align: middle; cursor: pointer; }
-.speed-control { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95em; }
-.speed-control label { white-space: nowrap; }
-.speed-control input[type="range"] { width: 120px; vertical-align: middle; }
-.speed-value { min-width: 50px; text-align: left; font-weight: bold; }
+/* .speed-control 関連のスタイルは削除 */
 
 main {}
 #quizArea { margin-bottom: 20px; }
@@ -74,40 +71,54 @@ button { padding: 12px 28px; color: white; border: none; border-radius: 8px; cur
 #resultText.incorrect { color: #e74c3c; }
 #correctAnswerText { color: #555; font-size: 1.1em; }
 
-/* ▼▼▼ 最終スコア表示エリアのスタイル ▼▼▼ */
 .final-score-display {
     margin-top: 30px;
-    padding: 20px;
-    background-color: #e9ecef;
-    border-radius: 8px;
+    padding: 25px 30px;
+    background-color: #e6f7ff; /* 明るい水色系 */
+    border: 1px solid #b3e0ff;
+    border-radius: 12px;
     text-align: center;
+    box-shadow: 0 6px 20px rgba(0,123,255,0.15);
 }
 .final-score-display h2 {
-    font-size: 1.5em;
-    color: #2c3e50;
-    margin-bottom: 10px;
+    font-size: 1.7em; /* 少し大きく */
+    color: #004085; /* 濃い青 */
+    margin-bottom: 15px;
 }
-#finalNormalizedScoreText {
-    font-size: 1.8em !important; /* Importantを削除し、CSSの優先順位で調整推奨 */
+.final-score-value { 
+    font-size: 2.4em !important; 
     font-weight: bold;
-    color: #007bff;
-    margin-bottom: 20px !important;
+    color: #0056b3; /* さらに濃い青 */
+    margin-bottom: 8px !important;
+    letter-spacing: 1px;
+}
+.final-raw-score {
+    font-size: 1.0em !important;
+    color: #495057; /* やや暗めのグレー */
+    margin-bottom: 18px !important;
+}
+.score-message {
+    font-size: 1.25em !important;
+    color: #155724; /* 濃い緑 */
+    background-color: #d4edda; /* 薄い緑背景 */
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 25px !important;
+    min-height: 1.5em;
+    font-style: normal; /* イタリック解除 */
 }
 #playAgainButton {
-    /* 既存のbuttonスタイルやutility-buttonスタイルを継承しつつ、必要なら微調整 */
-    background-color: #17a2b8; /* info color */
+    background-color: #28a745; 
+    padding: 12px 30px !important;
+    font-size: 1.1em !important; /* 少し大きく */
 }
 #playAgainButton:hover {
-    background-color: #138496;
+    background-color: #218838;
 }
-/* ▲▲▲ 最終スコア表示エリアのスタイル ▲▲▲ */
 
 
 .error-message, #loadingMessage, #quizEndMessage { font-weight: bold; margin-top: 20px; font-size: 1.1em; }
 #loadingMessage { color: #3498db; }
 #errorMessage { color: #e74c3c; }
-#quizEndMessage { color: #2c3e50; font-size: 1.3em; }
-.fade-in { animation: fadeIn 0.6s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-/* YouTube動画関連スタイルは削除 */
+#quizEndMessage { color
