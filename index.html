@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>研一と学ぶみんはやクイズ NEO</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>研一と学ぶみんはやクイズ NEO</h1>
+            <h1>研一と学ぶ<br class="title-br">みんはやクイズ NEO</h1>
             <div class="image-stats-wrapper">
-                <img src="stone.png" alt="Stone Image" id="stoneImage">
+                <img src="stone.png" alt="研一" id="stoneImage">
                 <div class="stats-text-group">
                     <p id="correctRateText" class="stats-text">正答率: ---</p>
                     <p id="avgRevealRateText" class="stats-text reveal-stats">平均開示率: ---</p>
@@ -23,15 +23,17 @@
                 <div class="seed-input-area">
                     <label for="seedInput">シード値 (数字10桁程度):</label>
                     <input type="text" id="seedInput" placeholder="例: 1234567890">
-                    <button id="applySeedButton" class="utility-button">シード適用&開始</button>
+                    <button id="applySeedButton" class="utility-button primary-action">シード適用 & 開始</button>
                 </div>
-                <div class="feature-toggle">
-                    <input type="checkbox" id="enableHintCheckbox" checked>
-                    <label for="enableHintCheckbox">ヒントを表示する</label>
-                </div>
-                <div class="feature-toggle">
-                    <input type="checkbox" id="showStoneImageCheckbox" checked>
-                    <label for="showStoneImageCheckbox">画像を表示する</label>
+                <div class="options-toggles">
+                    <div class="feature-toggle">
+                        <input type="checkbox" id="enableHintCheckbox" checked>
+                        <label for="enableHintCheckbox">ヒント表示</label>
+                    </div>
+                    <div class="feature-toggle">
+                        <input type="checkbox" id="showStoneImageCheckbox" checked>
+                        <label for="showStoneImageCheckbox">画像表示 (スコア影響)</label>
+                    </div>
                 </div>
             </div>
         </header>
@@ -39,18 +41,20 @@
         <main>
             <div id="quizArea" style="display:none;">
                 <p id="questionNumberText" class="question-meta"></p>
-                <p id="questionText" class="fade-in"></p>
-                <button id="stopSlowDisplayTextButton" style="display:none;" class="utility-button">表示を停止して回答</button>
+                <p id="questionText"></p> {/* fade-inクラスはJSで制御 */}
+                <button id="stopSlowDisplayTextButton" style="display:none;" class="utility-button">表示停止して回答</button>
                 
-                <input type="text" id="answerInput" placeholder="よみがなで答えを入力">
-                <button id="submitAnswer">回答する</button>
+                <input type="text" id="answerInput" placeholder="こたえを「よみ」で入力">
+                <button id="submitAnswer" class="action-button">回答する</button>
             </div>
 
-            <div id="resultArea" style="display:none;">
+            <div id="resultArea" style="display:none;" class="result-feedback">
                 <p id="resultText"></p>
                 <p id="correctAnswerText"></p>
-                <button id="disputeButton" style="display:none;">不服！これは正解だ</button>
-                <button id="nextQuestion">次の問題へ</button>
+                <div class="result-actions">
+                    <button id="disputeButton" style="display:none;" class="utility-button secondary-action">不服！これは正解だ</button>
+                    <button id="nextQuestion" class="action-button">次の問題へ</button>
+                </div>
             </div>
             
             <div id="finalScoreArea" style="display:none;" class="final-score-display">
@@ -58,20 +62,21 @@
                 <p class="final-score-value" id="finalNormalizedScoreText">最終スコア: -- / 100</p>
                 <p class="final-raw-score" id="finalRawScoreText">(あなたのポイント: ----)</p>
                 <p class="score-message" id="finalScoreMessage"></p>
-                <button id="playAgainButton" class="utility-button">もう一度挑戦する</button>
+                <button id="playAgainButton" class="action-button">もう一度挑戦する</button>
             </div>
 
-            <p id="loadingMessage">クイズを読み込み中...</p>
-            <p id="errorMessage" class="error-message"></p>
+            <p id="loadingMessage" style="display:none;">クイズを読み込み中...</p>
+            <p id="errorMessage" class="error-message" style="display:none;"></p>
             <p id="quizEndMessage" style="display:none;">全てのクイズが終了しました！</p>
         </main>
     </div>
 
-    <div class="hint-area-container">
-        <button id="hintButton" class="utility-button">ヒント</button>
+    <div class="hint-area-container" style="display:none;"> {/* 初期表示はJSで制御 */}
+        <button id="hintButton" class="utility-button small-action">ヒント</button>
         <p id="hintTextDisplay" class="hint-text"></p>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script> <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
