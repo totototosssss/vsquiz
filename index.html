@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研一と学ぶみんはやクイズ NEO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>研一と学ぶみんはやクイズ NEO</h1>
+            <div class="image-stats-wrapper">
+                <img src="stone.png" alt="Stone Image" id="stoneImage">
+                <div class="stats-text-group">
+                    <p id="correctRateText" class="stats-text">正答率: ---</p>
+                    <p id="avgRevealRateText" class="stats-text reveal-stats">平均開示率: ---</p>
+                    <p id="currentScoreText" class="stats-text score-display">現在スコア: 0</p>
+                    </div>
+            </div>
+            <div class="controls-wrapper">
+                <div class="feature-toggle">
+                    <input type="checkbox" id="enableSlowDisplayTextCheckbox">
+                    <label for="enableSlowDisplayTextCheckbox">問題をゆっくり表示する</label>
+                </div>
+                <div class="speed-control" id="speedControlArea" style="display: none;">
+                    <label for="slowDisplayTextSpeedSlider">表示速度:</label>
+                    <input type="range" id="slowDisplayTextSpeedSlider" min="20" max="200" value="80" step="10">
+                    <span id="speedValueDisplay" class="speed-value">80ms</span>
+                </div>
+                <div class="feature-toggle">
+                    <input type="checkbox" id="enableHintCheckbox" checked>
+                    <label for="enableHintCheckbox">ヒントを表示する</label>
+                </div>
+                <div class="feature-toggle">
+                    <input type="checkbox" id="showStoneImageCheckbox" checked>
+                    <label for="showStoneImageCheckbox">画像を表示する</label>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="quizArea" style="display:none;">
+                <p id="questionNumberText" class="question-meta"></p> <p id="questionText" class="fade-in"></p>
+                <button id="stopSlowDisplayTextButton" style="display:none;" class="utility-button">表示を停止して回答</button>
+                
+                <input type="text" id="answerInput" placeholder="よみがなで答えを入力">
+                <button id="submitAnswer">回答する</button>
+            </div>
+
+            <div id="resultArea" style="display:none;">
+                <p id="resultText"></p>
+                <p id="correctAnswerText"></p>
+                <button id="disputeButton" style="display:none;">不服！これは正解だ</button>
+                <button id="nextQuestion">次の問題へ</button>
+            </div>
+            
+            <div id="finalScoreArea" style="display:none;" class="final-score-display">
+                <h2>10問お疲れ様でした！</h2>
+                <p id="finalNormalizedScoreText">最終スコア: -- / 100</p>
+                <button id="playAgainButton" class="utility-button">もう一度挑戦</button>
+            </div>
+            <p id="loadingMessage">クイズを読み込み中...</p>
+            <p id="errorMessage" class="error-message"></p>
+            <p id="quizEndMessage" style="display:none;">全てのクイズが終了しました！</p> </main>
+    </div>
+
+    <div class="hint-area-container">
+        <button id="hintButton" class="utility-button">ヒント</button>
+        <p id="hintTextDisplay" class="hint-text"></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
