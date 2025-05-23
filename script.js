@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (normalizedScore >= 80) message = "高得点！お見事です！👏";
         else if (normalizedScore >= 60) message = "よくできました！😊";
         else if (normalizedScore >= 40) message = "まずまずですね！👍";
-        else message = "もう少し頑張りましょう";
+        else message = "もう少し頑張りましょう🤡";
         ui.finalScoreMessage.textContent = message;
 
         ui.finalScoreArea.style.display = 'block';
