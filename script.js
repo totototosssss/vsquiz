@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const ui = {
-        // ... (既存のUI要素) ...
         questionNumberText: document.getElementById('questionNumberText'),
         questionText: document.getElementById('questionText'),
         answerInput: document.getElementById('answerInput'),
@@ -31,18 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
         playAgainButton: document.getElementById('playAgainButton'),
         seedInput: document.getElementById('seedInput'),
         applySeedButton: document.getElementById('applySeedButton'),
-        // ▼▼▼ シード入力エリア全体を制御するため追加 ▼▼▼
         seedInputArea: document.querySelector('.seed-input-area')
-        // ▲▲▲ シード入力エリア全体を制御するため追加 ▲▲▲
     };
 
-    // ... (定数、グローバル変数、shuffleArrayWithSeed などは変更なし) ...
     const CSV_FILE_PATH = 'みんはや問題リストv1.27 - 問題リスト.csv';
     const COLUMN_INDICES = { QUESTION: 0, DISPLAY_ANSWER: 1, READING_ANSWER: 2 };
     const QUESTIONS_PER_SESSION = 10;
-    const SLOW_DISPLAY_INTERVAL_MS = 180; 
+    const SLOW_DISPLAY_INTERVAL_MS = 180;
     const MAX_POINTS_PER_QUESTION_BASE = 1000;
-    const REVEAL_PENALTY_PER_PERCENT = 7; 
+    const REVEAL_PENALTY_PER_PERCENT = 7;
     const HINT_PENALTY_FACTOR = 0.5;
     const IMAGE_HIDDEN_PENALTY_FACTOR = 0.2;
 
@@ -61,9 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalRevealPercentageSumForStat = 0;
     let slowDisplayAnswerCountForStat = 0;
     let currentSeed = '';
-    let isQuizDataLoaded = false; // quizDataがロードされたかのフラグ
+    let isQuizDataLoaded = false;
     let lastAnswerWasInitiallyIncorrect = false;
 
+    // ▼▼▼ 不服申し立て時のための直前問題情報 ▼▼▼
+    let disputable_charsRevealed = 0;
+    let disputable_fullLength = 0;
+    let disputable_hintUsed = false;
+    let disputable_imageShown = true;
+    // ▲▲▲ 不服申し立て時のための直前問題情報 ▲▲▲
 
     function shuffleArrayWithSeed(array, seed) {
         if (typeof Math.seedrandom === 'function') { Math.seedrandom(seed); }
@@ -91,11 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
              ui.quizEndMessage.textContent = `シード「${currentSeed}」での問題は全て終了しました。`;
              ui.quizEndMessage.style.display = 'block';
              ui.hintAreaContainer.style.display = 'none';
-             // ▼▼▼ シード入力エリアを再度表示 ▼▼▼
              ui.seedInputArea.style.display = 'flex'; 
              ui.seedInput.disabled = false;
              ui.applySeedButton.disabled = false;
-             // ▲▲▲ シード入力エリアを再度表示 ▲▲▲
              return;
         }
          if (currentQuizSession.length === 0 && overallQuizIndex === 0) {
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             ui.loadingMessage.textContent = "問題データを準備中...";
             ui.loadingMessage.style.display = 'block';
-            ui.seedInputArea.style.display = 'none'; // ロード中はシードエリアも隠す
+            ui.seedInputArea.style.display = 'none';
 
             const response = await fetch(CSV_FILE_PATH);
             if (!response.ok) throw new Error(`CSVエラー (${response.status})`);
@@ -148,13 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (quizzesFromFile.length === 0) throw new Error('有効なクイズなし');
             isQuizDataLoaded = true;
             ui.loadingMessage.style.display = 'none';
-            // ▼▼▼ シード入力エリアを表示し、入力を有効化 ▼▼▼
             ui.seedInputArea.style.display = 'flex'; 
             ui.seedInput.disabled = false;
             ui.applySeedButton.disabled = false;
-            // ▲▲▲ シード入力エリアを表示し、入力を有効化 ▲▲▲
-            // alert("問題データの準備ができました。シード値を入力して開始してください。"); // アラートは削除
-
+            ui.applySeedButton.style.display = 'inline-block';
         } catch (error) {
             console.error('読み込みエラー:', error);
             ui.loadingMessage.style.display = 'none';
@@ -178,9 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         ui.quizArea.style.display = 'none'; 
         ui.finalScoreArea.style.display = 'none';
-        // ▼▼▼ シード適用後、シード入力エリアを非表示に ▼▼▼
         ui.seedInputArea.style.display = 'none';
-        // ▲▲▲ シード適用後、シード入力エリアを非表示に ▲▲▲
         startNewSession();
     }
     
@@ -291,7 +286,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const userAnswer = ui.answerInput.value.trim();
         const currentQuiz = currentQuizSession[currentQuestionInSessionIndex];
         const isCorrect = userAnswer === currentQuiz.readingAnswer;
-        lastAnswerWasInitiallyIncorrect = false;
+        
+        // ▼▼▼ 不正解だった場合の情報を保存 ▼▼▼
+        if (!isCorrect) {
+            lastAnswerWasInitiallyIncorrect = true;
+            disputable_charsRevealed = charsRevealedForCalc;
+            disputable_fullLength = currentQuestionFullText.length;
+            disputable_hintUsed = hintUsedThisQuestion;
+            disputable_imageShown = ui.showStoneImageCheckbox.checked;
+        } else {
+            lastAnswerWasInitiallyIncorrect = false;
+        }
+        // ▲▲▲ 不正解だった場合の情報を保存 ▲▲▲
 
         if (isCorrect) correctAnswersOverall++;
         updateOverallCorrectRateDisplay();
@@ -303,29 +309,30 @@ document.addEventListener('DOMContentLoaded', () => {
             revealPercentageForScore = 200;
         }
         let baseScore = MAX_POINTS_PER_QUESTION_BASE - (revealPercentageForScore * REVEAL_PENALTY_PER_PERCENT);
-        if(revealPercentageForScore === 200) baseScore = 0;
-        if(!isCorrect) baseScore = 0;
+        if(revealPercentageForScore === 200) baseScore = 0; // 不正解時は基本点0
+        if(!isCorrect) baseScore = 0; // さらに明示的に0 (実質これは不要だが念のため)
+
 
         let questionScore = baseScore;
         if (hintUsedThisQuestion) questionScore *= HINT_PENALTY_FACTOR;
         if (!ui.showStoneImageCheckbox.checked) questionScore *= IMAGE_HIDDEN_PENALTY_FACTOR;
-        if (!isCorrect) questionScore = 0;
+        if (!isCorrect) questionScore = 0; 
 
         sessionRawScore += questionScore;
         ui.currentScoreText.textContent = `現在スコア: ${Math.round(sessionRawScore)}`;
 
-        let revealStatPercentage;
+        let revealStatPercentage; // 平均開示率の統計用
         if (isCorrect) {
             revealStatPercentage = (currentQuestionFullText.length > 0) ? (charsRevealedForCalc / currentQuestionFullText.length) * 100 : 0;
         } else {
             revealStatPercentage = 100;
         }
         totalRevealPercentageSumForStat += revealStatPercentage;
-        slowDisplayAnswerCountForStat++;
+        slowDisplayAnswerCountForStat++; // ゆっくり表示は常に有効なので、常にカウント
         updateAvgRevealRateDisplay();
         
         if (isCorrect) { ui.resultText.textContent = '正解！ 🎉'; ui.resultText.className = 'correct'; ui.disputeButton.style.display = 'none'; } 
-        else { ui.resultText.textContent = '不正解... 😢'; ui.resultText.className = 'incorrect'; ui.disputeButton.style.display = 'inline-block'; lastAnswerWasInitiallyIncorrect = true; }
+        else { ui.resultText.textContent = '不正解... 😢'; ui.resultText.className = 'incorrect'; ui.disputeButton.style.display = 'inline-block'; }
         let correctAnswerFormatted = `「${currentQuiz.readingAnswer}」`;
         if (currentQuiz.displayAnswer && currentQuiz.displayAnswer !== currentQuiz.readingAnswer) { correctAnswerFormatted = `「${currentQuiz.readingAnswer} (${currentQuiz.displayAnswer})」`; }
         ui.correctAnswerText.textContent = isCorrect ? '' : `正解は ${correctAnswerFormatted} です。`;
@@ -344,36 +351,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function endSession() {
         ui.quizArea.style.display = 'none'; ui.resultArea.style.display = 'none'; 
-        
         const maxPossibleBaseScorePerQuestion = MAX_POINTS_PER_QUESTION_BASE - (0 * REVEAL_PENALTY_PER_PERCENT);
         const maxTotalSessionRawScore = maxPossibleBaseScorePerQuestion * QUESTIONS_PER_SESSION;
-        
         let normalizedScore = 0;
-        if (maxTotalSessionRawScore > 0) {
-            normalizedScore = (sessionRawScore / maxTotalSessionRawScore) * 100;
-        }
+        if (maxTotalSessionRawScore > 0) { normalizedScore = (sessionRawScore / maxTotalSessionRawScore) * 100; }
         normalizedScore = Math.max(0, Math.min(100, Math.round(normalizedScore)));
-
         ui.finalNormalizedScoreText.textContent = `最終スコア: ${normalizedScore} / 100`;
         ui.finalRawScoreText.textContent = `(あなたのポイント: ${Math.round(sessionRawScore)})`;
-
         let message = "";
         if (normalizedScore >= 95) message = "完璧です！素晴らしい！ 😮🎉";
         else if (normalizedScore >= 80) message = "高得点！お見事です！👏";
         else if (normalizedScore >= 60) message = "よくできました！😊";
         else if (normalizedScore >= 40) message = "まずまずですね！👍";
-        else message = "もう少し頑張りましょう🤡";
+        else message = "もう少し頑張りましょう！💪";
         ui.finalScoreMessage.textContent = message;
-
         ui.finalScoreArea.style.display = 'block';
         ui.hintAreaContainer.style.display = 'none'; 
     }
 
     function handleDispute() {
         if (!lastAnswerWasInitiallyIncorrect) return; 
+        
+        // 1. 全体の正答率統計を修正
         correctAnswersOverall++; 
         updateOverallCorrectRateDisplay(); 
-        ui.resultText.textContent = '判定変更:🤡 ところで、不正してませんか?'; 
+
+        // 2. スコアを再計算して加算 (不正解時に0点だったので、正解時のスコアをまるごと加算)
+        let revealPercentageForScoreIfCorrect;
+        if (disputable_fullLength > 0) {
+            revealPercentageForScoreIfCorrect = (disputable_charsRevealed / disputable_fullLength) * 100;
+        } else {
+            revealPercentageForScoreIfCorrect = 0; 
+        }
+
+        let baseScoreIfCorrect = MAX_POINTS_PER_QUESTION_BASE - (revealPercentageForScoreIfCorrect * REVEAL_PENALTY_PER_PERCENT);
+        if (baseScoreIfCorrect < 0) baseScoreIfCorrect = 0;
+
+        let disputedQuestionScore = baseScoreIfCorrect;
+        if (disputable_hintUsed) disputedQuestionScore *= HINT_PENALTY_FACTOR;
+        if (!disputable_imageShown) disputedQuestionScore *= IMAGE_HIDDEN_PENALTY_FACTOR;
+        
+        sessionRawScore += disputedQuestionScore; // 不正解時に0点だったので、単純加算
+        ui.currentScoreText.textContent = `現在スコア: ${Math.round(sessionRawScore)}`;
+
+        // 3. 平均開示率の統計を修正
+        //    不正解時に100%として加算されたのを取り消し、実際の開示率で再加算
+        if (slowDisplayAnswerCountForStat > 0) { // この問題は既にカウントされているはず
+            totalRevealPercentageSumForStat -= 100; // 100%として加算された分を引く
+            
+            let actualRevealStatPercentage;
+            if (disputable_fullLength > 0) {
+                actualRevealStatPercentage = (disputable_charsRevealed / disputable_fullLength) * 100;
+            } else {
+                actualRevealStatPercentage = 0;
+            }
+            totalRevealPercentageSumForStat += actualRevealStatPercentage; // 正しい開示率で加算
+            // slowDisplayAnswerCountForStat は変更なし（1回回答した事実は変わらない）
+            updateAvgRevealRateDisplay();
+        }
+        
+        // 4. UI更新
+        ui.resultText.textContent = '判定変更: 正解としてスコア再計算 🎉'; 
         ui.resultText.className = 'correct'; 
         ui.disputeButton.style.display = 'none'; 
         lastAnswerWasInitiallyIncorrect = false;
@@ -405,18 +443,16 @@ document.addEventListener('DOMContentLoaded', () => {
         else { ui.stoneImage.style.display = 'none'; }
     });
     ui.playAgainButton.addEventListener('click', () => {
-        // ▼▼▼ シード入力エリアを再度表示し、クイズ関連エリアを非表示に ▼▼▼
         ui.seedInputArea.style.display = 'flex';
         ui.seedInput.disabled = false;
         ui.applySeedButton.disabled = false;
-        ui.applySeedButton.style.display = 'inline-block'; // 表示
+        ui.applySeedButton.style.display = 'inline-block';
         ui.finalScoreArea.style.display = 'none';
-        ui.quizArea.style.display = 'none'; // クイズエリアも隠す
+        ui.quizArea.style.display = 'none'; 
         ui.quizEndMessage.style.display = 'none';
-        alert("新しいシード値を入力して「シード適用＆開始」を押してください。\n同じシードを使うと、前回と同じ問題順になります。");
-        ui.seedInput.value = ''; // シード入力欄をクリア
+        // alert("新しいシード値を入力して「シード適用＆開始」を押してください。\n同じシードを使うと、前回と同じ問題順になります。");
+        ui.seedInput.value = currentSeed; // 前回のシードを保持しておくか、クリアするか
         ui.seedInput.focus();
-        // ▲▲▲ シード入力エリアを再度表示し、クイズ関連エリアを非表示に ▲▲▲
     });
     
     ui.applySeedButton.addEventListener('click', () => {
@@ -424,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (seedValue) {
             setupQuizWithSeed(seedValue);
         } else {
-            const randomSeed = Math.floor(Math.random() * 10000000000).toString();
+            const randomSeed = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0'); // 10桁のランダムシード
             if(window.confirm(`シードが空です。ランダムなシード「${randomSeed}」で開始しますか？\nキャンセルすると入力に戻ります。`)){
                 ui.seedInput.value = randomSeed;
                 setupQuizWithSeed(randomSeed);
@@ -437,7 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ui.enableHintCheckbox.addEventListener('change', () => {
         if (ui.enableHintCheckbox.checked) {
             ui.hintAreaContainer.style.display = 'block'; 
-            // クイズがアクティブな場合のみヒントボタンを表示する制御は displayQuestion 内で行う
             if(currentQuestionInSessionIndex < currentQuizSession.length && currentQuizSession.length > 0) {
                ui.hintButton.style.display = 'block';
             }
@@ -447,6 +482,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initial setup
-    ui.seedInputArea.style.display = 'none'; // 初期はシードエリアを隠す
+    ui.seedInputArea.style.display = 'none';
     preloadQuizData();
 });
