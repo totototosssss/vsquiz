@@ -20,6 +20,11 @@
                 </div>
             </div>
             <div class="controls-wrapper">
+                <div class="seed-input-area">
+                    <label for="seedInput">シード値 (数字10桁程度):</label>
+                    <input type="text" id="seedInput" placeholder="例: 1234567890">
+                    <button id="applySeedButton" class="utility-button">シード適用&開始</button>
+                </div>
                 <div class="feature-toggle">
                     <input type="checkbox" id="enableHintCheckbox" checked>
                     <label for="enableHintCheckbox">ヒントを表示する</label>
@@ -67,6 +72,6 @@
         <p id="hintTextDisplay" class="hint-text"></p>
     </div>
 
-    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script> <script src="script.js"></script>
 </body>
 </html>
