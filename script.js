@@ -359,7 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.finalNormalizedScoreText.textContent = `最終スコア: ${normalizedScore} / 100`;
         ui.finalRawScoreText.textContent = `(あなたのポイント: ${Math.round(sessionRawScore)})`;
         let message = "";
-        if (normalizedScore >= 95) message = "完璧です！素晴らしい！ 😮🎉";
+        if (normalizedScore >= 98) message = "完璧です！でも不正してますね。死んでくださーい笑🤡";
+        else if (normalizedScore >= 95) message = "完璧です！素晴らしい！ 😮🎉";
         else if (normalizedScore >= 80) message = "高得点！お見事です！👏";
         else if (normalizedScore >= 60) message = "よくできました！😊";
         else if (normalizedScore >= 40) message = "まずまずですね！👍";
