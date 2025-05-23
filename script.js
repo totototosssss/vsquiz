@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // 4. UI更新
-        ui.resultText.textContent = '判定変更: 正解としてスコア再計算 🎉'; 
+        ui.resultText.textContent = '判定変更 🤡 もしかしてあなた不正していませんか?'; 
         ui.resultText.className = 'correct'; 
         ui.disputeButton.style.display = 'none'; 
         lastAnswerWasInitiallyIncorrect = false;
