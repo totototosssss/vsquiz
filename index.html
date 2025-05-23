@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>研一と学ぶみんはやクイズ NEO</title>
+    <title>研一とみんはやチャレンジ</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>研一と学ぶ<br class="title-br">みんはやクイズ NEO</h1>
+            <h1>研一とみんはやチャレンジ</h1>
             <div class="image-stats-wrapper">
                 <img src="stone.png" alt="研一" id="stoneImage">
                 <div class="stats-text-group">
                     <p id="correctRateText" class="stats-text">正答率: ---</p>
                     <p id="avgRevealRateText" class="stats-text reveal-stats">平均開示率: ---</p>
-                    <p id="currentScoreText" class="stats-text score-display">現在スコア: 0</p>
+                    <p id="currentScoreText" class="stats-text score-display">現在score: 0</p>
                 </div>
             </div>
             <div class="controls-wrapper">
                 <div class="seed-input-area">
-                    <label for="seedInput">シード値 (数字10桁程度):</label>
+                    <label for="seedInput">シード値</label>
                     <input type="text" id="seedInput" placeholder="例: 1234567890">
                     <button id="applySeedButton" class="utility-button primary-action">シード適用 & 開始</button>
                 </div>
@@ -32,7 +32,7 @@
                     </div>
                     <div class="feature-toggle">
                         <input type="checkbox" id="showStoneImageCheckbox" checked>
-                        <label for="showStoneImageCheckbox">画像表示 (スコア影響)</label>
+                        <label for="showStoneImageCheckbox">研一表示 (スコア影響)</label>
                     </div>
                 </div>
             </div>
