@@ -17,18 +17,9 @@
                     <p id="correctRateText" class="stats-text">正答率: ---</p>
                     <p id="avgRevealRateText" class="stats-text reveal-stats">平均開示率: ---</p>
                     <p id="currentScoreText" class="stats-text score-display">現在スコア: 0</p>
-                    </div>
+                </div>
             </div>
             <div class="controls-wrapper">
-                <div class="feature-toggle">
-                    <input type="checkbox" id="enableSlowDisplayTextCheckbox">
-                    <label for="enableSlowDisplayTextCheckbox">問題をゆっくり表示する</label>
-                </div>
-                <div class="speed-control" id="speedControlArea" style="display: none;">
-                    <label for="slowDisplayTextSpeedSlider">表示速度:</label>
-                    <input type="range" id="slowDisplayTextSpeedSlider" min="20" max="200" value="80" step="10">
-                    <span id="speedValueDisplay" class="speed-value">80ms</span>
-                </div>
                 <div class="feature-toggle">
                     <input type="checkbox" id="enableHintCheckbox" checked>
                     <label for="enableHintCheckbox">ヒントを表示する</label>
@@ -42,7 +33,8 @@
 
         <main>
             <div id="quizArea" style="display:none;">
-                <p id="questionNumberText" class="question-meta"></p> <p id="questionText" class="fade-in"></p>
+                <p id="questionNumberText" class="question-meta"></p>
+                <p id="questionText" class="fade-in"></p>
                 <button id="stopSlowDisplayTextButton" style="display:none;" class="utility-button">表示を停止して回答</button>
                 
                 <input type="text" id="answerInput" placeholder="よみがなで答えを入力">
@@ -57,13 +49,17 @@
             </div>
             
             <div id="finalScoreArea" style="display:none;" class="final-score-display">
-                <h2>10問お疲れ様でした！</h2>
-                <p id="finalNormalizedScoreText">最終スコア: -- / 100</p>
-                <button id="playAgainButton" class="utility-button">もう一度挑戦</button>
+                <h2>10問チャレンジ終了！</h2>
+                <p class="final-score-value" id="finalNormalizedScoreText">最終スコア: -- / 100</p>
+                <p class="final-raw-score" id="finalRawScoreText">(あなたのポイント: ----)</p>
+                <p class="score-message" id="finalScoreMessage"></p>
+                <button id="playAgainButton" class="utility-button">もう一度挑戦する</button>
             </div>
+
             <p id="loadingMessage">クイズを読み込み中...</p>
             <p id="errorMessage" class="error-message"></p>
-            <p id="quizEndMessage" style="display:none;">全てのクイズが終了しました！</p> </main>
+            <p id="quizEndMessage" style="display:none;">全てのクイズが終了しました！</p>
+        </main>
     </div>
 
     <div class="hint-area-container">
