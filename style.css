@@ -35,16 +35,61 @@ h1 { color: #2c3e50; margin-bottom: 15px; font-weight: 700; font-size: 2em; }
 .score-display { color: #28a745; }
 
 
-.controls-wrapper { margin-top: 10px; margin-bottom: 20px; font-size: 0.9em; color: #555; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.controls-wrapper { margin-top: 10px; margin-bottom: 20px; font-size: 0.9em; color: #555; display: flex; flex-direction: column; align-items: center; gap: 15px; } /* gap調整 */
+
+/* ▼▼▼ シード入力エリアのスタイル ▼▼▼ */
+.seed-input-area {
+    display: flex;
+    flex-direction: column; /* 縦に並べる */
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 10px; /* 他のコントロールとの間隔 */
+}
+.seed-input-area label {
+    font-weight: bold;
+    font-size: 0.95em;
+}
+.seed-input-area input[type="text"] {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    text-align: center;
+    width: 150px; /* 幅を調整 */
+}
+#applySeedButton { /* シード適用ボタンの微調整 */
+    font-size: 0.9em !important;
+    padding: 8px 15px !important;
+    background-color: #6c757d; /* 少し落ち着いた色 */
+}
+#applySeedButton:hover {
+    background-color: #5a6268;
+}
+/* ▲▲▲ シード入力エリアのスタイル ▲▲▲ */
+
 .feature-toggle {}
 .feature-toggle input[type="checkbox"] { margin-right: 5px; vertical-align: middle; }
 .feature-toggle label { vertical-align: middle; cursor: pointer; }
-/* .speed-control 関連のスタイルは削除 */
 
 main {}
 #quizArea { margin-bottom: 20px; }
 #quizArea p, #resultArea p { font-size: 1.2em; margin-bottom: 18px; }
-.question-meta { font-size: 0.9em !important; color: #555; margin-bottom: 8px !important; }
+
+/* ▼▼▼ 問題番号表示の強調 ▼▼▼ */
+.question-meta {
+    font-size: 1.3em !important; /* 大幅に大きく */
+    color: #0056b3 !important; /* 濃い青色 */
+    font-weight: 700 !important; /* 太字 */
+    margin-bottom: 15px !important; /* 下の間隔を少し広げる */
+    border-bottom: 2px solid #0056b3; /* 下線を追加 */
+    padding-bottom: 5px; /* 下線との間隔 */
+    display: inline-block; /* 下線がテキスト幅に合うように */
+}
+/* ▲▲▲ 問題番号表示の強調 ▲▲▲ */
+
 #questionText { min-height: 80px; font-weight: 700; color: #34495e; margin-bottom: 15px !important; white-space: pre-wrap; line-height: 1.7; text-align: left; padding: 5px; border: 1px solid transparent; }
 .stopped-text-segment { background-color: rgba(255, 220, 100, 0.35); padding: 0 2px; border-radius: 2px; }
 
@@ -71,54 +116,17 @@ button { padding: 12px 28px; color: white; border: none; border-radius: 8px; cur
 #resultText.incorrect { color: #e74c3c; }
 #correctAnswerText { color: #555; font-size: 1.1em; }
 
-.final-score-display {
-    margin-top: 30px;
-    padding: 25px 30px;
-    background-color: #e6f7ff; /* 明るい水色系 */
-    border: 1px solid #b3e0ff;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 6px 20px rgba(0,123,255,0.15);
-}
-.final-score-display h2 {
-    font-size: 1.7em; /* 少し大きく */
-    color: #004085; /* 濃い青 */
-    margin-bottom: 15px;
-}
-.final-score-value { 
-    font-size: 2.4em !important; 
-    font-weight: bold;
-    color: #0056b3; /* さらに濃い青 */
-    margin-bottom: 8px !important;
-    letter-spacing: 1px;
-}
-.final-raw-score {
-    font-size: 1.0em !important;
-    color: #495057; /* やや暗めのグレー */
-    margin-bottom: 18px !important;
-}
-.score-message {
-    font-size: 1.25em !important;
-    color: #155724; /* 濃い緑 */
-    background-color: #d4edda; /* 薄い緑背景 */
-    border: 1px solid #c3e6cb;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 25px !important;
-    min-height: 1.5em;
-    font-style: normal; /* イタリック解除 */
-}
-#playAgainButton {
-    background-color: #28a745; 
-    padding: 12px 30px !important;
-    font-size: 1.1em !important; /* 少し大きく */
-}
-#playAgainButton:hover {
-    background-color: #218838;
-}
-
+.final-score-display { margin-top: 30px; padding: 25px 30px; background-color: #e6f7ff; border: 1px solid #b3e0ff; border-radius: 12px; text-align: center; box-shadow: 0 6px 20px rgba(0,123,255,0.15); }
+.final-score-display h2 { font-size: 1.7em; color: #004085; margin-bottom: 15px; }
+.final-score-value { font-size: 2.4em !important; font-weight: bold; color: #0056b3; margin-bottom: 8px !important; letter-spacing: 1px; }
+.final-raw-score { font-size: 1.0em !important; color: #495057; margin-bottom: 18px !important; }
+.score-message { font-size: 1.25em !important; color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: 10px; border-radius: 6px; margin-bottom: 25px !important; min-height: 1.5em; font-style: normal; }
+#playAgainButton { background-color: #28a745; padding: 12px 30px !important; font-size: 1.1em !important; }
+#playAgainButton:hover { background-color: #218838; }
 
 .error-message, #loadingMessage, #quizEndMessage { font-weight: bold; margin-top: 20px; font-size: 1.1em; }
 #loadingMessage { color: #3498db; }
 #errorMessage { color: #e74c3c; }
-#quizEndMessage { color
+#quizEndMessage { color: #2c3e50; font-size: 1.3em; }
+.fade-in { animation: fadeIn 0.6s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
